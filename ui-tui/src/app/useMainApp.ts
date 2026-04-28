@@ -1,6 +1,6 @@
 import { type ScrollBoxHandle, useApp, useHasSelection, useSelection, useStdout, useTerminalTitle } from '@hermes/ink'
 import { useStore } from '@nanostores/react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import { STARTUP_RESUME_ID } from '../config/env.js'
 import { FULL_RENDER_TAIL_ITEMS, MAX_HISTORY, WHEEL_SCROLL_STEP } from '../config/limits.js'
@@ -143,6 +143,7 @@ export function useMainApp(gw: GatewayClient) {
 
   const hasSelection = useHasSelection()
   const selection = useSelection()
+  const selectionVersion = useSyncExternalStore(selection.subscribe, selection.version)
 
   useEffect(() => {
     selection.setSelectionBgColor(ui.theme.color.selectionBg)
@@ -164,7 +165,7 @@ export function useMainApp(gw: GatewayClient) {
     }
 
     void selection.copySelectionNoClear()
-  }, [hasSelection, selection])
+  }, [hasSelection, selection, selectionVersion])
 
   const clearSelection = useCallback(() => {
     selection.clearSelection()
