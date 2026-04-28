@@ -148,6 +148,24 @@ export function useMainApp(gw: GatewayClient) {
     selection.setSelectionBgColor(ui.theme.color.selectionBg)
   }, [selection, ui.theme.color.selectionBg])
 
+  // macOS Terminal.app does not forward Cmd+C to fullscreen TUIs that enable
+  // mouse tracking, so the only reliable native-feeling path is iTerm-style
+  // copy-on-select: once a drag creates a stable TUI selection, write it to
+  // the system clipboard while keeping the highlight visible.
+  useEffect(() => {
+    if (!hasSelection) {
+      return
+    }
+
+    const state = selection.getState() as { isDragging?: boolean } | null
+
+    if (state?.isDragging) {
+      return
+    }
+
+    void selection.copySelectionNoClear()
+  }, [hasSelection, selection])
+
   const clearSelection = useCallback(() => {
     selection.clearSelection()
     getInputSelection()?.collapseToEnd()
